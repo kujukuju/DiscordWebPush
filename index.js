@@ -73,7 +73,7 @@ discordClient.on('messageCreate', message => {
     }
 
     if (message.mentions.everyone) {
-        notify(channel, message.content);
+        notify(channel, message.author.username, message.content, message.url);
     } else {
         const mentioned = [];
         message.mentions.users.forEach(user => {
@@ -81,7 +81,7 @@ discordClient.on('messageCreate', message => {
         });
 
         if (mentioned.includes(JOHN)) {
-            notify(channel, message.content);
+            notify(channel, message.author.username, message.content, message.url);
         }
     }
 });
@@ -119,7 +119,7 @@ app.post('/register', (req, res) => {
     res.sendStatus(201);
  });
 
-const notify = (channel, text) => {
+const notify = (channel, author, text, link) => {
     if (!associations.endpoint) {
         channel.send('You must connect your notifications.');
         return;
@@ -136,7 +136,7 @@ const notify = (channel, text) => {
             auth: associations.auths,
             p256dh: associations.key,
         },
-    }, text).then(() => {
+    }, author + ': ' + text + ' ' + link).then(() => {
         console.log('Push sent.');
     }).catch((error) => {
         console.log(error);

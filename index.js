@@ -120,6 +120,8 @@ app.post('/register', (req, res) => {
  });
 
 const notify = (channel, author, text, link) => {
+    link = link.replaceAll('https', 'discord');
+    
     console.log('link ', link);
     if (!associations.endpoint) {
         channel.send('You must connect your notifications.');

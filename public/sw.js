@@ -24,8 +24,9 @@ self.addEventListener('notificationclick', e => {
         notification.close();
         console.log('Closed notification');
     } else {
-        notification.close();
-        self.clients.openWindow(notification.data);
-        // window.open(notification.data, 'Discord Link', '_blank');
+        // notification.close();
+        e.waitUntil(self.clients.matchAll({type: 'window'}).then(clientsArr => {
+            self.clients.openWindow(notification.data).then(windowClient => windowClient ? windowClient.focus() : null);
+        }));
     }
 });

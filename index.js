@@ -90,6 +90,6 @@ if (secure) {
     console.log('Listening on port 4002.');
 } else {
     app.listen(4000, () => {
-        console.log('Listening on port 4002.');
+        console.log('Listening on port 4000.');
     });
 }

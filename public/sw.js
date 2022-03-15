@@ -18,15 +18,9 @@ self.addEventListener('push', function(event) {
 
 self.addEventListener('notificationclick', e => {
     const notification = e.notification;
-    const action = e.action;
 
-    if (!action || action === 'dismiss') {
-        notification.close();
-        console.log('Closed notification');
-    } else {
-        // notification.close();
-        e.waitUntil(self.clients.matchAll({type: 'window'}).then(clientsArr => {
-            self.clients.openWindow(notification.data).then(windowClient => windowClient ? windowClient.focus() : null);
-        }));
-    }
+    // notification.close();
+    e.waitUntil(self.clients.matchAll({type: 'window'}).then(clientsArr => {
+        self.clients.openWindow(notification.data).then(windowClient => windowClient ? windowClient.focus() : null);
+    }));
 });

@@ -2,5 +2,12 @@
   "name": "Discord Push",
   "short_name": "discord_push",
   "start_url": "./index.html",
-  "display": "standalone"
+  "display": "standalone",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    }
+  ]
 }

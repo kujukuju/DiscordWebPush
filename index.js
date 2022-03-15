@@ -5,14 +5,29 @@ const webpush = require('web-push');
 const express = require('express');
 const https = require('https');
 
+const INACTIVE_TIMEOUT = 1 * 60 * 1000;
+const JOHN = 'GeneralJelly#9827';
+
 // console.log(process.argv);
 
 const secure = process.argv[2] === 'secure';
 
+const discordkey = String(fs.readFileSync(path.join(__dirname, 'discordkey.txt')));
 const gcmKey = String(fs.readFileSync(path.join(__dirname, 'gcmkey.txt')));
 const vapidKeyLines = String(fs.readFileSync(path.join(__dirname, 'vapidkeys.json'))).replaceAll('\r', '').split('\n');
 let vapidPublicKey;
 let vapidPrivateKey;
+
+// this will be used to keep track of username -> notification information, but for now its just for john
+// we will do this by creating user.js redirect, passing in their username and a secret, storing that username and secret in the associations file, then
+// when they submit their notification request with their username and secret we validate the secret and create the association
+const associationPath = path.join(__dirname, "associations.json");
+
+let associations = {};
+if (fs.existsSync(associationPath)) {
+    associations = JSON.parse(String(fs.readFileSync(associationPath)));
+}
+associations.lastActiveTime = 0;
 
 let nextIsPublic = false;
 let nextIsPrivate = false;
@@ -33,8 +48,52 @@ for (let i = 0; i < vapidKeyLines.length; i++) {
     }
 }
 
+const discordClient = new Discord.Client({intents: [Discord.Intents.FLAGS.GUILDS, Discord.Intents.FLAGS.GUILD_MESSAGES, Discord.Intents.FLAGS.GUILD_MESSAGE_REACTIONS]});
+
+discordClient.on('ready', () => {
+    console.log('Logged in as ' + discordClient.user.tag + '.');
+});
+
+discordClient.on('messageCreate', message => {
+    const guildID = message.guildId;
+    const channelID = message.channelId;
+
+    const guild = discordClient.guilds.resolve(guildID);
+    if (!guild) {
+        return;
+    }
+
+    const channel = guild.channels.resolve(channelID);
+    if (!channel) {
+        return;
+    }
+
+    if (message.author.username + '#' + message.author.discriminator === JOHN) {
+        associations.lastActiveTime = Date.now();
+    }
+
+    if (message.mentions.everyone) {
+        notify(channel, message.content);
+    } else {
+        const mentioned = [];
+        message.mentions.users.forEach(user => {
+            mentioned.push(user.username + '#' + user.discriminator);
+        });
+
+        if (mentioned.includes(JOHN)) {
+            notify(channel, message.content);
+        }
+    }
+});
+
+discordClient.login(discordkey);
+
 const app = express();
 app.use(express.json());
+// app.get('/user.js', (req, res, next) => {
+//     res.setHeader('content-type', 'text/javascript');
+//     res.send('const USERNAME = \'' + vapidPublicKey + '\';');
+// });
 app.get('/key.js', (req, res, next) => {
     res.setHeader('content-type', 'text/javascript');
     res.send('const PUBLIC_KEY = \'' + vapidPublicKey + '\';');
@@ -50,36 +109,39 @@ webpush.setVapidDetails(
 
 app.post('/register', (req, res) => {
     console.log('Registered: ', req);
-    endpoint = req.body.endpoint;
-    key = req.body.key;
-    auths = req.body.authSecret;
+    associations.endpoint = req.body.endpoint;
+    associations.key = req.body.key;
+    associations.auths = req.body.authSecret;
+    associations.lastActiveTime = 0;
+
+    writeAssociations();
  
     res.sendStatus(201);
  });
 
- var endpoint = '';
- var key = '';
- var auths = '';
-
- const text = 'hello world';
-
- setInterval(() => {
-    console.log('Endpoint: ', endpoint);
-    if (endpoint !== '') {
-        webpush.sendNotification({
-            endpoint: endpoint,
-            TTL: 60,
-            keys: {
-                auth: auths,
-                p256dh: key,
-            },
-        }, text).then(() => {
-            console.log('Push sent.');
-        }).catch((error) => {
-            console.log(error);
-        });
+const notify = (channel, text) => {
+    if (!associations.endpoint) {
+        channel.send('You must connect your notifications.');
+        return;
     }
-}, 1000);
+
+    if (Date.now() - associations.lastActiveTime < INACTIVE_TIMEOUT) {
+        return;
+    }
+
+    webpush.sendNotification({
+        endpoint: associations.endpoint,
+        TTL: 60,
+        keys: {
+            auth: associations.auths,
+            p256dh: associations.key,
+        },
+    }, text).then(() => {
+        console.log('Push sent.');
+    }).catch((error) => {
+        console.log(error);
+    });
+};
 
 if (secure) {
     const credentials = {
@@ -94,3 +156,7 @@ if (secure) {
         console.log('Listening on port 4000.');
     });
 }
+
+const writeAssociations = () => {
+    fs.writeFileSync(associationPath, JSON.stringify(associations));
+};

@@ -9,7 +9,7 @@ self.addEventListener('push', function(event) {
     event.waitUntil(
         self.registration.showNotification('Discord', {
             body: message,
-            icon: './icon-192.png',
+            icon: './icon-64.png',
             badge: './icon-192.png',
             data: link,
         })
@@ -21,8 +21,11 @@ self.addEventListener('notificationclick', e => {
     const action = e.action;
 
     if (!action || action === 'dismiss') {
+        notification.close();
         console.log('Closed notification');
     } else {
-        window.open(notification.data, '_blank');
+        notification.close();
+        self.clients.openWindow(notification.data);
+        // window.open(notification.data, 'Discord Link', '_blank');
     }
 });

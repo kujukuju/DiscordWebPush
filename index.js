@@ -108,7 +108,7 @@ webpush.setVapidDetails(
 );
 
 app.post('/register', (req, res) => {
-    console.log('Registered: ', req);
+    console.log('Registered.');
     associations.endpoint = req.body.endpoint;
     associations.key = req.body.key;
     associations.auths = req.body.authSecret;
@@ -120,6 +120,7 @@ app.post('/register', (req, res) => {
  });
 
 const notify = (channel, author, text, link) => {
+    console.log('link ', link);
     if (!associations.endpoint) {
         channel.send('You must connect your notifications.');
         return;

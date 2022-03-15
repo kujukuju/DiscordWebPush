@@ -7,6 +7,15 @@ Generate gcm api key.
 https://console.cloud.google.com/
 Save it in `gcmkey.txt` file.
 
+    * `sudo apt-get update`
+    * `sudo apt-get install nginx`
+    * `sudo snap install --classic certbot`
+    * `sudo certbot --nginx`
+    * `crontab -e`
+        * `0 0 1 * * certbot renew && systemctl reload nginx`
+    * `ln -s /home/island/DiscordWebPush/bots.veraegames.com /etc/nginx/sites-enabled/bots.veraegames.com`
+    * `systemctl reload nginx`
+
 ---
 
 Go create a discord bot and copy the client ID.

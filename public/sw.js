@@ -9,9 +9,8 @@ self.addEventListener('push', function(event) {
     event.waitUntil(
         self.registration.showNotification('Discord', {
             body: message,
-            icon: '/icon-192.png',
-            badge: '/icon-192.png',
-            renotify: true,
+            icon: './icon-192.png',
+            badge: './icon-192.png',
             data: link,
         })
     );

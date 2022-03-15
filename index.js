@@ -5,7 +5,7 @@ const webpush = require('web-push');
 const express = require('express');
 const https = require('https');
 
-const INACTIVE_TIMEOUT = 1 * 60 * 1000;
+const INACTIVE_TIMEOUT = 1 * 60 * 500;
 const JOHN = 'GeneralJelly#9827';
 
 // console.log(process.argv);
@@ -70,10 +70,12 @@ discordClient.on('messageCreate', message => {
 
     if (message.author.username + '#' + message.author.discriminator === JOHN) {
         associations.lastActiveTime = Date.now();
+        return;
     }
 
     if (message.mentions.everyone) {
         notify(channel, message.author.username, message.content, message.url);
+        return;
     } else {
         const mentioned = [];
         message.mentions.users.forEach(user => {
@@ -82,8 +84,16 @@ discordClient.on('messageCreate', message => {
 
         if (mentioned.includes(JOHN)) {
             notify(channel, message.author.username, message.content, message.url);
+            return;
         }
     }
+
+    // just a regular message at this point
+    if (Date.now() - associations.lastActiveTime < INACTIVE_TIMEOUT) {
+        return;
+    }
+
+    notify(channel, message.author.username, message.content, message.url);
 });
 
 discordClient.login(discordkey);
@@ -124,10 +134,6 @@ const notify = (channel, author, text, link) => {
     // console.log('link ', link);
     if (!associations.endpoint) {
         channel.send('You must connect your notifications.');
-        return;
-    }
-
-    if (Date.now() - associations.lastActiveTime < INACTIVE_TIMEOUT) {
         return;
     }
 

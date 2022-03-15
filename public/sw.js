@@ -12,6 +12,8 @@ self.addEventListener('push', function(event) {
             icon: './icon-64.png',
             badge: './icon-192.png',
             data: link,
+            renotify: true,
+            tag: "discord",
         })
     );
 });

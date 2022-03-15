@@ -19,7 +19,7 @@ self.addEventListener('push', function(event) {
 self.addEventListener('notificationclick', e => {
     const notification = e.notification;
 
-    // notification.close();
+    notification.close();
     e.waitUntil(self.clients.matchAll({type: 'window'}).then(clientsArr => {
         self.clients.openWindow(notification.data).then(windowClient => windowClient ? windowClient.focus() : null);
     }));

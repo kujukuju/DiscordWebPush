@@ -1,0 +1,6 @@
+{
+  "name": "Discord Push",
+  "short_name": "discord_push",
+  "start_url": "./index.html",
+  "display": "standalone"
+}

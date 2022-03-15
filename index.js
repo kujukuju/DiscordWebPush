@@ -36,6 +36,7 @@ for (let i = 0; i < vapidKeyLines.length; i++) {
 const app = express();
 app.use(express.json());
 app.get('/key.js', (req, res, next) => {
+    res.setHeader('content-type', 'text/javascript');
     res.send('const PUBLIC_KEY = \'' + vapidPublicKey + '\';');
 });
 app.use(express.static(path.join(__dirname, 'public')));

@@ -1,7 +1,7 @@
 # SSL server configuration
 server {
-	listen 4002 ssl default_server;
-	listen [::]:4002 ssl default_server;
+	listen 4002 ssl http2;
+	listen [::]:4002 ssl http2;
 
 	# SSL certs
 	ssl_certificate /etc/letsencrypt/live/bots.veraegames.com/fullchain.pem;

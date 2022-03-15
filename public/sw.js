@@ -25,6 +25,6 @@ self.addEventListener('notificationclick', e => {
     if (!action || action === 'dismiss') {
         console.log('Closed notification');
     } else {
-
+        window.open(notification.data, '_blank');
     }
 });
